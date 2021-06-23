@@ -1,25 +1,33 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/danangkonang/crud-rest/config"
+	"github.com/danangkonang/crud-rest/model"
 )
 
-type Animal struct {
-	ID          string    `json:"animal_id,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	Color       string    `json:"color,omitempty"`
-	Description string    `json:"description,omitempty"`
-	Image       string    `json:"image,omitempty"`
-	CreateAt    time.Time `json:"created_at,omitempty"`
-	UpdateAt    time.Time `json:"updated_at,omitempty"`
+type AnimalService interface {
+	SaveAnimal(animal *model.Animal) error
+	FindAnimal() ([]model.Animal, error)
+	DetailAnimal(animal *model.Animal) error
+	DeleteAnimal(animal *model.Animal) error
+	UpdateAnimal(animal *model.Animal) error
 }
 
-func SaveAnimal(animal *Animal) error {
-	db := config.Connect()
-	defer db.Close()
+func NewServiceAnimal(Con *config.DB) AnimalService {
+	return &PsqlAnimalService{
+		Psql: Con.Postgresql,
+	}
+}
+
+type PsqlAnimalService struct {
+	Psql *sql.DB
+}
+
+func (m *PsqlAnimalService) SaveAnimal(animal *model.Animal) error {
+	defer m.Psql.Close()
 	query := `
 		INSERT INTO
 			animals (animal_id, name, color, description, image, created_at, updated_at)
@@ -27,27 +35,26 @@ func SaveAnimal(animal *Animal) error {
 			($1, $2, $3, $4, $5, $6, $7)
 		RETURNING animal_id
 	`
-	row := db.QueryRow(query, animal.ID, animal.Name, animal.Color, animal.Description, animal.Image, animal.CreateAt, animal.UpdateAt)
+	row := m.Psql.QueryRow(query, animal.ID, animal.Name, animal.Color, animal.Description, animal.Image, animal.CreateAt, animal.UpdateAt)
 	err := row.Scan(&animal.ID)
 	return err
 }
 
-func FindAnimal() ([]Animal, error) {
-	db := config.Connect()
-	defer db.Close()
+func (m *PsqlAnimalService) FindAnimal() ([]model.Animal, error) {
+	defer m.Psql.Close()
 	query := `
 		SELECT
 			*
 		FROM
 			animals
 	`
-	row, err := db.Query(query)
+	row, err := m.Psql.Query(query)
 	if err != nil {
 		return nil, errors.New("internal server error")
 	}
-	var animal []Animal
+	var animal []model.Animal
 	for row.Next() {
-		var an Animal
+		var an model.Animal
 		err := row.Scan(&an.ID, &an.Name, &an.Color, &an.Description, &an.Image, &an.CreateAt, &an.UpdateAt)
 		if err != nil {
 			return nil, err
@@ -57,9 +64,8 @@ func FindAnimal() ([]Animal, error) {
 	return animal, nil
 }
 
-func DetailAnimal(animal *Animal) error {
-	db := config.Connect()
-	defer db.Close()
+func (m *PsqlAnimalService) DetailAnimal(animal *model.Animal) error {
+	defer m.Psql.Close()
 	query := `
 		SELECT
 			*
@@ -67,31 +73,29 @@ func DetailAnimal(animal *Animal) error {
 			animals
 		WHERE animal_id = $1
 	`
-	row := db.QueryRow(query, animal.ID)
+	row := m.Psql.QueryRow(query, animal.ID)
 	err := row.Scan(&animal.ID, &animal.Name, &animal.Color, &animal.Description, &animal.Image, &animal.CreateAt, &animal.UpdateAt)
 	return err
 }
 
-func DeleteAnimal(animal *Animal) error {
-	db := config.Connect()
-	defer db.Close()
+func (m *PsqlAnimalService) DeleteAnimal(animal *model.Animal) error {
+	defer m.Psql.Close()
 	query := `
 		DELETE FROM
 			animals
 		WHERE animal_id = $1
 	`
-	row := db.QueryRow(query, animal.ID)
+	row := m.Psql.QueryRow(query, animal.ID)
 	return row.Err()
 }
 
-func UpdateAnimal(animal *Animal) error {
-	db := config.Connect()
-	defer db.Close()
+func (m *PsqlAnimalService) UpdateAnimal(animal *model.Animal) error {
+	defer m.Psql.Close()
 	query := `
 		UPDATE
 			animals SET name = $1, color = $2, description = $3, updated_at = $4
 		WHERE animal_id = $5
 	`
-	row := db.QueryRow(query, animal.Name, animal.Color, animal.Description, animal.UpdateAt, animal.ID)
+	row := m.Psql.QueryRow(query, animal.Name, animal.Color, animal.Description, animal.UpdateAt, animal.ID)
 	return row.Err()
 }
