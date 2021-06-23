@@ -1,13 +1,9 @@
 .env
-vendor/
 
-local-file/
+*.png
+*.jpg
+*.jpeg
 
-files/food/*
-
-files/product/*
-
-files/user/*
 postgres/
 
 main

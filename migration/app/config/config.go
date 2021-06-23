@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -15,11 +14,13 @@ func Connect() *sql.DB {
 	connection := os.Getenv("DB_CONNECTION")
 	db, err := sql.Open(connection, dbUrl)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err.Error())
+		os.Exit(0)
 	}
 	err = db.Ping()
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err.Error())
+		os.Exit(0)
 	}
 	return db
 }
@@ -27,7 +28,8 @@ func Connect() *sql.DB {
 func GetDbUrl() string {
 	err := godotenv.Load()
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err.Error())
+		os.Exit(0)
 	}
 	var url = os.Getenv("DATABASE_URL")
 	if url == "" {

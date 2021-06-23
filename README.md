@@ -1,14 +1,23 @@
 # simple crud go
 
 
-installation
+## installation
 
+```bash
+git clone https://github.com/danangkonang/simple-crud-golang.git crud-rest
+
+cd crud-rest
 ```
-$ git clone https://github.com/danangkonang/simple-crud-golang.git crud-rest
 
-$ cd crud-rest
+## database
 
-$ ./gomig run -m
+- this project use tool _gomig_ for migration. you can red doc in [here](https://github.com/danangkonang/migration-go-cli)
 
-$ go run main.go
+```bash
+./gomig run migration
+```
+
+## running program
+```go
+go run main.go
 ```

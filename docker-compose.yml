@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  database:
+    image: postgres
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "9001:5432"
+    volumes:
+      - ./pg-crud:/var/lib/postgresql/data
+    container_name: postgresdb
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      - database
+    networks:
+      - default
+    ports:
+    - "9000:9000"
+    volumes: 
+      - ./crud-files:/app/files/food
+    container_name: golang-crud-app
+# volumes:
+#   data:
