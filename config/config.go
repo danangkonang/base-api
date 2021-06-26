@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -31,6 +32,9 @@ func NewDb() *DB {
 	if err != nil {
 		panic(err)
 	}
+	db.SetMaxOpenConns(16)
+	db.SetMaxIdleConns(16)
+	db.SetConnMaxLifetime(30 * time.Minute)
 	err = db.Ping()
 	if err != nil {
 		panic(err)

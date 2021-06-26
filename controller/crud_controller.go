@@ -52,20 +52,21 @@ func (p *Animal) AnimalShow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Animal) AnimalDetail(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "application/json")
-	var animal model.Animal
+	// w.Header().Set("Content-type", "application/json")
+	// var animal model.Animal
 	id := r.FormValue("id")
 	if id == "" {
 		helper.MakeRespon(w, 400, "params id required", nil)
 		return
 	}
-	animal.ID = id
-	err := p.Service.DetailAnimal(&animal)
+	// p.Service.DetailAnimal(id)
+	// animal.ID = id
+	res, err := p.Service.DetailAnimal(id)
 	if err != nil {
-		helper.MakeRespon(w, 400, "id not found", nil)
+		helper.MakeRespon(w, 400, err.Error(), nil)
 		return
 	}
-	helper.MakeRespon(w, 200, "success", animal)
+	helper.MakeRespon(w, 200, "success", res)
 }
 
 func (p *Animal) AnimalEdit(w http.ResponseWriter, r *http.Request) {
