@@ -3,11 +3,9 @@ package config
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -16,10 +14,10 @@ type DB struct {
 }
 
 func NewDb() *DB {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	user := os.Getenv("DB_USER")
 	password := os.Getenv("DB_PASSWORD")

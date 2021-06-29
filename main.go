@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
+	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"time"
 
 	"github.com/danangkonang/crud-rest/config"
 	"github.com/danangkonang/crud-rest/router"
@@ -12,19 +17,27 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const STATIC_DIR = "/files/"
+func init() {
+	godotenv.Load()
+}
 
 func main() {
+	var wait time.Duration
+	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
+	flag.Parse()
 	r := mux.NewRouter().StrictSlash(true)
-	r.PathPrefix(STATIC_DIR).Handler(http.StripPrefix(STATIC_DIR, http.FileServer(http.Dir("."+STATIC_DIR))))
-	godotenv.Load()
-
-	PORT := os.Getenv("PORT")
-	// c := controller.NewAnimalHandler(config.NewDb())
+	r.PathPrefix("/files/").Handler(
+		http.StripPrefix(
+			"/files/",
+			http.FileServer(
+				http.Dir("."+"/files/"),
+			),
+		),
+	)
+	// PORT := os.Getenv("PORT")
 	router.CrudRouter(r, config.NewDb())
-	// router.NotFoundRouter(r)
+	router.NotFoundRouter(r)
 
-	fmt.Println("local server started at http://localhost:" + PORT)
 	header := []string{
 		"X-Requested-With",
 		"Access-Control-Allow-Origin",
@@ -33,9 +46,32 @@ func main() {
 	}
 	method := []string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}
 	origin := []string{"*"}
-	http.ListenAndServe(":"+PORT, handlers.CORS(
-		handlers.AllowedHeaders(header),
-		handlers.AllowedMethods(method),
-		handlers.AllowedOrigins(origin),
-	)(r))
+
+	srv := &http.Server{
+		Addr:         "127.0.0.1:9000",
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler: handlers.CORS(
+			handlers.AllowedHeaders(header),
+			handlers.AllowedMethods(method),
+			handlers.AllowedOrigins(origin),
+		)(r),
+	}
+	fmt.Println("local server started at http://" + srv.Addr)
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Println(err)
+		}
+	}()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	<-c
+	ctx, cancel := context.WithTimeout(context.Background(), wait)
+	defer cancel()
+	srv.Shutdown(ctx)
+	log.Println("shutting down")
+	os.Exit(0)
 }

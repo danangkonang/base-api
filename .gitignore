@@ -4,7 +4,7 @@
 *.jpg
 *.jpeg
 
-postgres/
+pg-crud/
 
 main
 
