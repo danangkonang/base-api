@@ -3,8 +3,10 @@ services:
   database:
     image: postgres:9.6.21-alpine
     restart: always
-    env_file:
-      - .env
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=crud
     ports:
       - "9001:5432"
     volumes:
