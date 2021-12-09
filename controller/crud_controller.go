@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/danangkonang/crud-rest/config"
@@ -29,7 +30,7 @@ func (p *Animal) AnimalCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	animal.ID = helper.UnixRandomString(8)
+	animal.Image = helper.RamdomString() + ".jpg"
 	animal.CreateAt = time.Now()
 	animal.UpdateAt = time.Now()
 	if err := p.Service.SaveAnimal(&animal); err != nil {
@@ -43,6 +44,7 @@ func (p *Animal) AnimalShow(w http.ResponseWriter, r *http.Request) {
 	res, err := p.Service.FindAnimal()
 	if err != nil {
 		helper.MakeRespon(w, 500, err.Error(), nil)
+		return
 	}
 	if len(res) == 0 {
 		helper.MakeRespon(w, 200, "success", make([]string, 0))
@@ -52,16 +54,19 @@ func (p *Animal) AnimalShow(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Animal) AnimalDetail(w http.ResponseWriter, r *http.Request) {
-	// w.Header().Set("Content-type", "application/json")
-	// var animal model.Animal
-	id := r.FormValue("id")
+	var animal model.Animal
+	id := r.FormValue("animal_id")
 	if id == "" {
 		helper.MakeRespon(w, 400, "params id required", nil)
 		return
 	}
-	// p.Service.DetailAnimal(id)
-	// animal.ID = id
-	res, err := p.Service.DetailAnimal(id)
+	animal_id, err := strconv.Atoi(id)
+	if err != nil {
+		helper.MakeRespon(w, 400, "invalid id", nil)
+		return
+	}
+	animal.ID = animal_id
+	res, err := p.Service.DetailAnimal(animal.ID)
 	if err != nil {
 		helper.MakeRespon(w, 400, err.Error(), nil)
 		return
@@ -97,5 +102,5 @@ func (p *Animal) AnimalDelete(w http.ResponseWriter, r *http.Request) {
 		helper.MakeRespon(w, 400, err.Error(), nil)
 		return
 	}
-	helper.MakeRespon(w, 200, "animal di hapus", nil)
+	helper.MakeRespon(w, 200, "success", nil)
 }

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func UnixRandomString(length int) string {
+func unixRandomString(length int) string {
 	rand.Seed(time.Now().UnixNano())
 	chars := []rune("C2DBEWK6SX8PQ9R3FG4HA1YZLM7NOI5J0TUV" + "luk9vmw6ob1cd2xenf3gp7qr8sah4i5tj0yz" + "0123456789")
 	var b strings.Builder
@@ -33,6 +33,6 @@ func random(length int) string {
 }
 
 func RamdomString() string {
-	name := random(8) + "_" + UnixRandomString(16)
+	name := random(8) + "_" + unixRandomString(16)
 	return name
 }

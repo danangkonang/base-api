@@ -1,0 +1,39 @@
+GET http://localhost:9000/v1/animals HTTP/1.1
+content-type: application/json
+
+###
+
+GET http://localhost:9000/v1/animal?animal_id=2 HTTP/1.1
+content-type: application/json
+
+###
+
+POST http://localhost:9000/v1/animal HTTP/1.1
+content-type: application/json
+
+{
+  "name": "cat",
+	"color": "white",
+	"description": "varry cute"
+}
+
+###
+
+PUT http://localhost:9000/v1/animal HTTP/1.1
+content-type: application/json
+
+{
+  "animal_id": 1,
+  "name": "edit cat",
+	"color": "edit white",
+	"description": "edit varry cute"
+}
+
+###
+
+DELETE http://localhost:9000/v1/animal HTTP/1.1
+content-type: application/json
+
+{
+  "animal_id": 1
+}

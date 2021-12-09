@@ -14,23 +14,20 @@ type DB struct {
 }
 
 func NewDb() *DB {
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
-	port := os.Getenv("DB_PORT")
-	host := os.Getenv("DB_HOST")
-
-	connection := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Jakarta", host, port, user, password, dbname)
-	db, err := sql.Open(os.Getenv("DB_CONNECTION"), connection)
+	connection := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Jakarta",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+	)
+	db, err := sql.Open(os.Getenv("DB_DRIVER"), connection)
 	if err != nil {
 		panic(err)
 	}
-	db.SetMaxOpenConns(16)
-	db.SetMaxIdleConns(16)
-	db.SetConnMaxLifetime(30 * time.Minute)
-	err = db.Ping()
-	if err != nil {
-		panic(err)
-	}
+	db.SetMaxOpenConns(100)
+	db.SetMaxIdleConns(50)
+	db.SetConnMaxLifetime(5 * time.Minute)
 	return &DB{Postgresql: db}
 }

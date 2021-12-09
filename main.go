@@ -34,7 +34,6 @@ func main() {
 			),
 		),
 	)
-	// PORT := os.Getenv("PORT")
 	router.CrudRouter(r, config.NewDb())
 	router.NotFoundRouter(r)
 
@@ -44,7 +43,7 @@ func main() {
 		"Content-Type",
 		"Authorization",
 	}
-	method := []string{"GET", "POST", "PUT", "HEAD", "OPTIONS"}
+	method := []string{"GET", "POST", "PUT", "DELETE"}
 	origin := []string{"*"}
 
 	srv := &http.Server{
