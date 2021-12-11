@@ -3,6 +3,7 @@ package service
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/danangkonang/crud-rest/config"
 	"github.com/danangkonang/crud-rest/model"
@@ -31,18 +32,17 @@ func (m *PsqlAnimalService) SaveAnimal(animal *model.Animal) error {
 		INSERT INTO
 			animals (name, color, description, image, created_at, updated_at)
 		VALUES
-			($1, $2, $3, $4, $5, $6)
-		RETURNING animal_id
+			(?, ?, ?, ?, ?, ?)
 	`
-	row := m.Psql.QueryRow(query, animal.Name, animal.Color, animal.Description, animal.Image, animal.CreateAt, animal.UpdateAt)
-	err := row.Scan(&animal.ID)
+	rest, err := m.Psql.Exec(query, animal.Name, animal.Color, animal.Description, animal.Image, animal.CreatedAt, animal.UpdatedAt)
+	fmt.Println(rest.LastInsertId())
 	return err
 }
 
 func (m *PsqlAnimalService) FindAnimal() ([]model.Animal, error) {
 	query := `
 		SELECT
-			*
+			animal_id, name, color, description, image, created_at, updated_at
 		FROM
 			animals
 	`
@@ -53,7 +53,7 @@ func (m *PsqlAnimalService) FindAnimal() ([]model.Animal, error) {
 	var animal []model.Animal
 	for row.Next() {
 		var an model.Animal
-		err := row.Scan(&an.ID, &an.Name, &an.Color, &an.Description, &an.Image, &an.CreateAt, &an.UpdateAt)
+		err := row.Scan(&an.ID, &an.Name, &an.Color, &an.Description, &an.Image, &an.CreatedAt, &an.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +73,7 @@ func (m *PsqlAnimalService) DetailAnimal(uid int) (*model.Animal, error) {
 		WHERE animal_id = $1
 	`
 	row := m.Psql.QueryRow(query, uid)
-	err := row.Scan(&animal.ID, &animal.Name, &animal.Color, &animal.Description, &animal.Image, &animal.CreateAt, &animal.UpdateAt)
+	err := row.Scan(&animal.ID, &animal.Name, &animal.Color, &animal.Description, &animal.Image, &animal.CreatedAt, &animal.UpdatedAt)
 	if err != nil {
 		if err.Error() == sql.ErrNoRows.Error() {
 			return nil, errors.New("id not found")
@@ -83,13 +83,9 @@ func (m *PsqlAnimalService) DetailAnimal(uid int) (*model.Animal, error) {
 }
 
 func (m *PsqlAnimalService) DeleteAnimal(animal *model.Animal) error {
-	query := `
-		DELETE FROM
-			animals
-		WHERE animal_id = $1
-	`
-	row := m.Psql.QueryRow(query, animal.ID)
-	return row.Err()
+	query := "DELETE FROM animals WHERE animal_id = $1"
+	_, err := m.Psql.Exec(query, animal.ID)
+	return err
 }
 
 func (m *PsqlAnimalService) UpdateAnimal(animal *model.Animal) error {
@@ -98,6 +94,6 @@ func (m *PsqlAnimalService) UpdateAnimal(animal *model.Animal) error {
 			animals SET name = $1, color = $2, description = $3, updated_at = $4
 		WHERE animal_id = $5
 	`
-	row := m.Psql.QueryRow(query, animal.Name, animal.Color, animal.Description, animal.UpdateAt, animal.ID)
-	return row.Err()
+	_, err := m.Psql.Exec(query, animal.Name, animal.Color, animal.Description, animal.UpdatedAt, animal.ID)
+	return err
 }

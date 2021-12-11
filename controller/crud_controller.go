@@ -30,14 +30,14 @@ func (p *Animal) AnimalCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	animal.Image = helper.RamdomString() + ".jpg"
-	animal.CreateAt = time.Now()
-	animal.UpdateAt = time.Now()
+	// animal.Image = helper.RamdomString() + ".jpg"
+	animal.CreatedAt = time.Now()
+	animal.UpdatedAt = time.Now()
 	if err := p.Service.SaveAnimal(&animal); err != nil {
 		helper.MakeRespon(w, 400, err.Error(), nil)
 		return
 	}
-	helper.MakeRespon(w, 200, "success", animal)
+	helper.MakeRespon(w, 200, "success", nil)
 }
 
 func (p *Animal) AnimalShow(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +82,7 @@ func (p *Animal) AnimalEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
-	animal.UpdateAt = time.Now()
+	animal.UpdatedAt = time.Now()
 	if err := p.Service.UpdateAnimal(&animal); err != nil {
 		helper.MakeRespon(w, 400, err.Error(), nil)
 		return

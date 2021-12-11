@@ -5,6 +5,7 @@
 *.jpeg
 
 pg-crud/
+db-mysql/
 
 main
 

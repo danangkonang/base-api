@@ -8,6 +8,6 @@ type Animal struct {
 	Color       string    `json:"color,omitempty"`
 	Description string    `json:"description,omitempty"`
 	Image       string    `json:"image,omitempty"`
-	CreateAt    time.Time `json:"created_at,omitempty"`
-	UpdateAt    time.Time `json:"updated_at,omitempty"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }

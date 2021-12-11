@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type Migration struct{}
