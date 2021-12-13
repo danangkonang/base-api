@@ -54,19 +54,20 @@ func TestFindAnimals(t *testing.T) {
 	}
 	defer con.Postgresql.Close()
 	timestamp := time.Now()
-	rows := sqlmock.NewRows([]string{"animal_id", "name", "color", "description", "created_at", "updated_at"}).AddRow(1, "gajah", "blue", "long nose", "gajah.jpg", timestamp, timestamp)
+	rows := sqlmock.NewRows([]string{"animal_id", "name", "color", "description", "created_at", "updated_at"}).
+		AddRow(1, "gajah", "blue", "long nose", timestamp, timestamp)
 	query := `
 		SELECT
 			animal_id, name, color, description, created_at, updated_at
 		FROM
 			animals
 	`
-	mock.ExpectQuery(query).WillReturnRows(rows)
+	mock.ExpectQuery(regexp.QuoteMeta(query)).WillReturnRows(rows)
 	request, _ := http.NewRequest("GET", "/v1/animals", nil)
 	response := httptest.NewRecorder()
 	Server((*config.DB)(con)).ServeHTTP(response, request)
 	body, _ := ioutil.ReadAll(response.Body)
-	expectedResponse := fmt.Sprintf("{\"status\":200,\"message\":\"success\",\"data\":[{\"animal_id\":1,\"name\":\"gajah\",\"color\":\"blue\",\"description\":\"long nose\",\"image\":\"gajah.jpg\",\"created_at\":\"%s\",\"updated_at\":\"%s\"}]}", timestamp.Format(time.RFC3339Nano), timestamp.Format(time.RFC3339Nano))
+	expectedResponse := fmt.Sprintf("{\"status\":200,\"message\":\"success\",\"data\":[{\"animal_id\":1,\"name\":\"gajah\",\"color\":\"blue\",\"description\":\"long nose\",\"created_at\":\"%s\",\"updated_at\":\"%s\"}]}", timestamp.Format(time.RFC3339Nano), timestamp.Format(time.RFC3339Nano))
 	assert.Equal(t, http.StatusOK, response.Code, "Invalid response code")
 	assert.Equal(t, expectedResponse, string(bytes.TrimSpace(body)))
 }
