@@ -7,7 +7,6 @@ type Animal struct {
 	Name        string    `json:"name,omitempty"`
 	Color       string    `json:"color,omitempty"`
 	Description string    `json:"description,omitempty"`
-	Image       string    `json:"image,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
@@ -17,7 +16,6 @@ type ResponseAnimal struct {
 	Name        string    `json:"name,omitempty"`
 	Color       string    `json:"color,omitempty"`
 	Description string    `json:"description,omitempty"`
-	Image       string    `json:"image,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }

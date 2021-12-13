@@ -30,12 +30,12 @@ func (m *PsqlAnimalService) SaveAnimal(animal *model.Animal) (*model.ResponseAni
 	anim := new(model.ResponseAnimal)
 	query := `
 		INSERT INTO
-			animals (name, color, description, image, created_at, updated_at)
+			animals (name, color, description, created_at, updated_at)
 		VALUES
 			($1, $2, $3, $4, $5, $6)
 		RETURNING animal_id
 	`
-	row := m.Psql.QueryRow(query, animal.Name, animal.Color, animal.Description, animal.Image, animal.CreatedAt, animal.UpdatedAt)
+	row := m.Psql.QueryRow(query, animal.Name, animal.Color, animal.Description, animal.CreatedAt, animal.UpdatedAt)
 	err := row.Scan(&anim.ID)
 	if err != nil {
 		return anim, err
@@ -46,7 +46,7 @@ func (m *PsqlAnimalService) SaveAnimal(animal *model.Animal) (*model.ResponseAni
 func (m *PsqlAnimalService) FindAnimal() ([]model.Animal, error) {
 	query := `
 		SELECT
-			animal_id, name, color, description, image, created_at, updated_at
+			animal_id, name, color, description, created_at, updated_at
 		FROM
 			animals
 	`
@@ -54,16 +54,16 @@ func (m *PsqlAnimalService) FindAnimal() ([]model.Animal, error) {
 	if err != nil {
 		return nil, errors.New("internal server error")
 	}
+	defer row.Close()
 	var animal []model.Animal
 	for row.Next() {
 		var an model.Animal
-		err := row.Scan(&an.ID, &an.Name, &an.Color, &an.Description, &an.Image, &an.CreatedAt, &an.UpdatedAt)
+		err := row.Scan(&an.ID, &an.Name, &an.Color, &an.Description, &an.CreatedAt, &an.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
 		animal = append(animal, an)
 	}
-	defer row.Close()
 	return animal, nil
 }
 
@@ -71,13 +71,13 @@ func (m *PsqlAnimalService) DetailAnimal(uid int) (*model.Animal, error) {
 	animal := new(model.Animal)
 	query := `
 		SELECT
-			animal_id, name, color, description, image, created_at, updated_at
+			animal_id, name, color, description, created_at, updated_at
 		FROM
 			animals
 		WHERE animal_id = $1
 	`
 	row := m.Psql.QueryRow(query, uid)
-	err := row.Scan(&animal.ID, &animal.Name, &animal.Color, &animal.Description, &animal.Image, &animal.CreatedAt, &animal.UpdatedAt)
+	err := row.Scan(&animal.ID, &animal.Name, &animal.Color, &animal.Description, &animal.CreatedAt, &animal.UpdatedAt)
 	if err != nil {
 		if err.Error() == sql.ErrNoRows.Error() {
 			return nil, errors.New("id not found")

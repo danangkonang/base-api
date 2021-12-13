@@ -12,7 +12,6 @@ func (m *Migration) Animals() {
 			name        VARCHAR (225) NOT NULL,
 			color       VARCHAR (225) NOT NULL,
 			description VARCHAR (225) NOT NULL,
-			image       VARCHAR (225) NULL,
 			created_at TIMESTAMP NOT NULL,
 			updated_at TIMESTAMP NOT NULL
 		)

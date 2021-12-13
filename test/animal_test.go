@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"testing"
 	"time"
 
@@ -53,10 +54,10 @@ func TestFindAnimals(t *testing.T) {
 	}
 	defer con.Postgresql.Close()
 	timestamp := time.Now()
-	rows := sqlmock.NewRows([]string{"animal_id", "name", "color", "description", "image", "created_at", "updated_at"}).AddRow(1, "gajah", "blue", "long nose", "gajah.jpg", timestamp, timestamp)
+	rows := sqlmock.NewRows([]string{"animal_id", "name", "color", "description", "created_at", "updated_at"}).AddRow(1, "gajah", "blue", "long nose", "gajah.jpg", timestamp, timestamp)
 	query := `
 		SELECT
-			animal_id, name, color, description, image, created_at, updated_at
+			animal_id, name, color, description, created_at, updated_at
 		FROM
 			animals
 	`
@@ -88,7 +89,6 @@ func TestCreateAnimal(t *testing.T) {
 				Name:        "gajah",
 				Color:       "cokelat",
 				Description: "hidung panjang",
-				Image:       "gajah.jpg",
 				CreatedAt:   time.Now(),
 				UpdatedAt:   time.Now(),
 			},
@@ -102,16 +102,23 @@ func TestCreateAnimal(t *testing.T) {
 	}
 	defer con.Postgresql.Close()
 	for _, smpl := range sample {
-		sqlmock.NewRows([]string{"animal_id", "name", "color", "description", "image", "created_at", "updated_at"}).AddRow(1, smpl.body.Name, smpl.body.Color, smpl.body.Description, smpl.body.Image, smpl.body.CreatedAt, smpl.body.UpdatedAt)
-		query := "INSERT INTO animals \\(name, color, description, image, created_at, updated_at\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5, \\$6\\) RETURNING animal_id"
+		sqlmock.NewRows([]string{"animal_id", "name", "color", "description", "created_at", "updated_at"}).
+			AddRow(1, smpl.body.Name, smpl.body.Color, smpl.body.Description, smpl.body.CreatedAt, smpl.body.UpdatedAt)
+		query := `
+			INSERT INTO
+				animals (name, color, description, created_at, updated_at)
+			VALUES
+				($1, $2, $3, $4, $5, $6)
+			RETURNING animal_id
+		`
 		bd, _ := json.Marshal(smpl.body)
-		mock.ExpectQuery(query).WithArgs(smpl.body.Name, smpl.body.Color, smpl.body.Description, smpl.body.Image, AnyTime{}, AnyTime{}).WillReturnRows(sqlmock.NewRows([]string{"animal_id"}).FromCSVString("1"))
+		mock.ExpectQuery(regexp.QuoteMeta(query)).WithArgs(smpl.body.Name, smpl.body.Color, smpl.body.Description, AnyTime{}, AnyTime{}).
+			WillReturnRows(sqlmock.NewRows([]string{"animal_id"}).FromCSVString("1"))
+
 		request, _ := http.NewRequest("POST", "/v1/animal", bytes.NewReader(bd))
 		request.Header.Add("Content-Type", "application/json")
 		response := httptest.NewRecorder()
-
 		Server(&config.DB{Postgresql: con.Postgresql}).ServeHTTP(response, request)
-
 		responseBody := make(map[string]interface{})
 		rbody, _ := ioutil.ReadAll(response.Body)
 		err := json.Unmarshal(rbody, &responseBody)
@@ -165,11 +172,10 @@ func TestUpdate(t *testing.T) {
 		Name:        "",
 		Color:       "",
 		Description: "",
-		Image:       "",
 		UpdatedAt:   time.Now(),
 	}
 	bd, _ := json.Marshal(smpl)
-	sqlmock.NewRows([]string{"animal_id", "name", "color", "description", "image", "created_at", "updated_at"}).AddRow(1, smpl.Name, smpl.Color, smpl.Description, smpl.Image, smpl.CreatedAt, smpl.UpdatedAt)
+	sqlmock.NewRows([]string{"animal_id", "name", "color", "description", "created_at", "updated_at"}).AddRow(1, smpl.Name, smpl.Color, smpl.Description, smpl.CreatedAt, smpl.UpdatedAt)
 
 	query := "UPDATE animals SET name = \\$1, color = \\$2, description = \\$3, updated_at = \\$4 WHERE animal_id = \\$5"
 	mock.ExpectExec(query).WithArgs(smpl.Name, smpl.Color, smpl.Description, AnyTime{}, smpl.ID).WillReturnResult(sqlmock.NewResult(0, 1))
