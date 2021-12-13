@@ -8,13 +8,13 @@ import (
 func (m *Migration) Animals() {
 	query := `
 		CREATE TABLE animals(
-			animal_id INT AUTO_INCREMENT PRIMARY KEY,
+			animal_id serial PRIMARY KEY,
 			name        VARCHAR (225) NOT NULL,
 			color       VARCHAR (225) NOT NULL,
 			description VARCHAR (225) NOT NULL,
 			image       VARCHAR (225) NULL,
-			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			created_at TIMESTAMP NOT NULL,
+			updated_at TIMESTAMP NOT NULL
 		)
 	`
 	_, err := Connection().Db.Exec(query)

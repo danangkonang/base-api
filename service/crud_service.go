@@ -3,14 +3,13 @@ package service
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/danangkonang/crud-rest/config"
 	"github.com/danangkonang/crud-rest/model"
 )
 
 type AnimalService interface {
-	SaveAnimal(animal *model.Animal) error
+	SaveAnimal(animal *model.Animal) (*model.ResponseAnimal, error)
 	FindAnimal() ([]model.Animal, error)
 	DetailAnimal(id int) (*model.Animal, error)
 	DeleteAnimal(animal *model.Animal) error
@@ -27,16 +26,21 @@ type PsqlAnimalService struct {
 	Psql *sql.DB
 }
 
-func (m *PsqlAnimalService) SaveAnimal(animal *model.Animal) error {
+func (m *PsqlAnimalService) SaveAnimal(animal *model.Animal) (*model.ResponseAnimal, error) {
+	anim := new(model.ResponseAnimal)
 	query := `
 		INSERT INTO
 			animals (name, color, description, image, created_at, updated_at)
 		VALUES
-			(?, ?, ?, ?, ?, ?)
+			($1, $2, $3, $4, $5, $6)
+		RETURNING animal_id
 	`
-	rest, err := m.Psql.Exec(query, animal.Name, animal.Color, animal.Description, animal.Image, animal.CreatedAt, animal.UpdatedAt)
-	fmt.Println(rest.LastInsertId())
-	return err
+	row := m.Psql.QueryRow(query, animal.Name, animal.Color, animal.Description, animal.Image, animal.CreatedAt, animal.UpdatedAt)
+	err := row.Scan(&anim.ID)
+	if err != nil {
+		return anim, err
+	}
+	return anim, nil
 }
 
 func (m *PsqlAnimalService) FindAnimal() ([]model.Animal, error) {
@@ -85,7 +89,10 @@ func (m *PsqlAnimalService) DetailAnimal(uid int) (*model.Animal, error) {
 func (m *PsqlAnimalService) DeleteAnimal(animal *model.Animal) error {
 	query := "DELETE FROM animals WHERE animal_id = $1"
 	_, err := m.Psql.Exec(query, animal.ID)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *PsqlAnimalService) UpdateAnimal(animal *model.Animal) error {
@@ -95,5 +102,8 @@ func (m *PsqlAnimalService) UpdateAnimal(animal *model.Animal) error {
 		WHERE animal_id = $5
 	`
 	_, err := m.Psql.Exec(query, animal.Name, animal.Color, animal.Description, animal.UpdatedAt, animal.ID)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }

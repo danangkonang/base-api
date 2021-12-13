@@ -33,11 +33,12 @@ func (p *Animal) AnimalCreate(w http.ResponseWriter, r *http.Request) {
 	// animal.Image = helper.RamdomString() + ".jpg"
 	animal.CreatedAt = time.Now()
 	animal.UpdatedAt = time.Now()
-	if err := p.Service.SaveAnimal(&animal); err != nil {
+	res, err := p.Service.SaveAnimal(&animal)
+	if err != nil {
 		helper.MakeRespon(w, 400, err.Error(), nil)
 		return
 	}
-	helper.MakeRespon(w, 200, "success", nil)
+	helper.MakeRespon(w, 200, "success", res)
 }
 
 func (p *Animal) AnimalShow(w http.ResponseWriter, r *http.Request) {

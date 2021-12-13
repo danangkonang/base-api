@@ -5,9 +5,9 @@ import (
 	"os"
 )
 
-func (m *Migration) Users() {
+func (m *Migration) Product() {
 	query := `
-		CREATE TABLE users(
+		CREATE TABLE product(
 			id serial PRIMARY KEY,
 			name VARCHAR (225) NOT NULL,
 			created_at TIMESTAMP NOT NULL,
@@ -19,5 +19,5 @@ func (m *Migration) Users() {
 		fmt.Println(err.Error())
 		os.Exit(0)
 	}
-	fmt.Println(string(Green), "success", string(Reset), "create table 0002_migration_users.go")
+  fmt.Println(string(Green), "success", string(Reset), "create table 0003_migration_product.go")
 }
